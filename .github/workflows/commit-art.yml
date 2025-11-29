@@ -1,0 +1,38 @@
+name: Contribution date
+
+on:
+  schedule:
+    # 08:00 UTC = midnight PST (Nov–Mar) and 1am PDT (Mar–Nov).
+    # This guarantees it is always at least midnight Pacific, so the
+    # date painted is never yesterday's. GitHub schedules are UTC.
+    # The push itself is what keeps this schedule alive: GitHub turns
+    # scheduled workflows off after 60 days with no repository activity.
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: contribution-date
+  cancel-in-progress: false
+
+jobs:
+  paint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Paint today's date
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT_ART_LOGIN: amotor-AM
+          COMMIT_ART_NAME: Alex Motor
+          COMMIT_ART_EMAIL: 66324211+amotor-AM@users.noreply.github.com
+        run: python -m commit_art --paint --push
